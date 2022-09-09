@@ -1,0 +1,12 @@
+@import url('view-design/dist/styles/iview.css');
+@import url('viewerjs/dist/viewer.css');
+
+@media(min-width:576px){.container{max-width:540px;}}
+@media(min-width:768px){.container{max-width:720px;}}
+@media(min-width:992px){.container{max-width:960px;}}
+@media(min-width:1200px){.container{max-width:1140px;}}
+.container{margin: 0 auto;}
+
+canvas.transparent,.viewer-canvas{
+  background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAsSURBVDhPYziLF/zHC0Y1YwCoKhxgRGqG0jgA1AwcYFQzBoCqwgFGnuazZwGTizZd/UjqewAAAABJRU5ErkJggg") repeat
+}

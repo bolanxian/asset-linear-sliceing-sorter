@@ -1,0 +1,24 @@
+{
+  "name": "asset-linear-sliceing-sorter",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lzma-purejs": "^0.9.3",
+    "mini-lz4": "^3.0.0",
+    "view-design": "^4.7.0",
+    "viewerjs": "^1.10.5",
+    "vue": "^2.7.10"
+  },
+  "devDependencies": {
+    "rollup-plugin-amd": "^4.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "vite": "^3.0.9"
+  }
+}
