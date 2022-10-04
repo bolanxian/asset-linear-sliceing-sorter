@@ -1,5 +1,6 @@
 
-const {now}=Date,{min}=Math
+import {Buffer} from 'buffer'
+const {now}=Date
 const noop=()=>{}
 const delay=t=>new Promise(ok=>{setTimeout(ok,t)})
 const delay0_=ok=>{setTimeout(ok,0)}

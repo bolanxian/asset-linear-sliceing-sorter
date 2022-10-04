@@ -1,8 +1,6 @@
 import { defineConfig, splitVendorChunkPlugin } from 'vite'
-//import vue from '@vitejs/plugin-vue'
 import amd from 'rollup-plugin-amd'
-import builtins from 'rollup-plugin-node-builtins'
-import globals from 'rollup-plugin-node-globals'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: './',
@@ -13,11 +11,23 @@ export default defineConfig({
     minify: false
   },
   plugins: [
-    { ...builtins(), enforce: 'pre' },
     amd({
       include: 'node_modules/lzma-purejs/**'
     }),
-    globals(),
+    ...((opts = {}) => {
+      const { resolveId: nodePolyfillsPluginResolveId, ...nodePolyfillsPlugin } = nodePolyfills(opts)
+      return [
+        {
+          name: 'node-builtins-resolve-id',
+          resolveId: nodePolyfillsPluginResolveId,
+          enforce: 'pre'
+        },
+        {
+          ...nodePolyfillsPlugin,
+          enforce: 'post'
+        }
+      ]
+    })(),
     splitVendorChunkPlugin()
   ]
 })
