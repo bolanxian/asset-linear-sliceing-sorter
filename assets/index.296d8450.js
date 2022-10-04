@@ -1,4 +1,4 @@
-import { B as Buffer$2, i as isBuffer, l as lz4, a as lzma, V as Vue, b as iview, c as Viewer } from './vendor.314ee7d6.js';
+import { B as Buffer$2, l as lz4, a as lzma, V as Vue, i as iview, b as Viewer } from './vendor.e8b2eea5.js';
 
 const style = '';
 
@@ -163,7 +163,7 @@ class Reader$1{
 class BufferReader$3 extends Reader$1{
   constructor(data){
     super();
-    if(!isBuffer(data)){data=Buffer$2.from(data);}
+    if(!Buffer$2.isBuffer(data)){data=Buffer$2.from(data);}
     this.data=data;
     this.position=0;
     this.size=data.length;

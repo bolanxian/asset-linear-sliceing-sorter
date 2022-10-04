@@ -1,18 +1,6 @@
 const global$1 = (typeof global !== "undefined" ? global :
-            typeof self !== "undefined" ? self :
-            typeof window !== "undefined" ? window : {});
-
-if (typeof global$1.setTimeout === 'function') ;
-if (typeof global$1.clearTimeout === 'function') ;
-
-// from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance = global$1.performance || {};
-performance.now        ||
-  performance.mozNow     ||
-  performance.msNow      ||
-  performance.oNow       ||
-  performance.webkitNow  ||
-  function(){ return (new Date()).getTime() };
+  typeof self !== "undefined" ? self :
+  typeof window !== "undefined" ? window : {});
 
 /*!
  * Vue.js v2.7.10
@@ -7708,64 +7696,64 @@ if (inBrowser) {
 }
 
 const vue_runtime_esm = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-            __proto__: null,
-            EffectScope,
-            computed,
-            customRef,
-            default: Vue,
-            defineAsyncComponent,
-            defineComponent,
-            del,
-            effectScope,
-            getCurrentInstance,
-            getCurrentScope,
-            h,
-            inject,
-            isProxy,
-            isReactive,
-            isReadonly,
-            isRef,
-            isShallow,
-            markRaw,
-            mergeDefaults,
-            nextTick,
-            onActivated,
-            onBeforeMount,
-            onBeforeUnmount,
-            onBeforeUpdate,
-            onDeactivated,
-            onErrorCaptured,
-            onMounted,
-            onRenderTracked,
-            onRenderTriggered,
-            onScopeDispose,
-            onServerPrefetch,
-            onUnmounted,
-            onUpdated,
-            provide,
-            proxyRefs,
-            reactive,
-            readonly,
-            ref: ref$1,
-            set,
-            shallowReactive,
-            shallowReadonly,
-            shallowRef,
-            toRaw,
-            toRef,
-            toRefs,
-            triggerRef,
-            unref,
-            useAttrs,
-            useCssModule,
-            useCssVars,
-            useListeners,
-            useSlots,
-            version,
-            watch,
-            watchEffect,
-            watchPostEffect,
-            watchSyncEffect
+  __proto__: null,
+  EffectScope,
+  computed,
+  customRef,
+  default: Vue,
+  defineAsyncComponent,
+  defineComponent,
+  del,
+  effectScope,
+  getCurrentInstance,
+  getCurrentScope,
+  h,
+  inject,
+  isProxy,
+  isReactive,
+  isReadonly,
+  isRef,
+  isShallow,
+  markRaw,
+  mergeDefaults,
+  nextTick,
+  onActivated,
+  onBeforeMount,
+  onBeforeUnmount,
+  onBeforeUpdate,
+  onDeactivated,
+  onErrorCaptured,
+  onMounted,
+  onRenderTracked,
+  onRenderTriggered,
+  onScopeDispose,
+  onServerPrefetch,
+  onUnmounted,
+  onUpdated,
+  provide,
+  proxyRefs,
+  reactive,
+  readonly,
+  ref: ref$1,
+  set,
+  shallowReactive,
+  shallowReadonly,
+  shallowRef,
+  toRaw,
+  toRef,
+  toRefs,
+  triggerRef,
+  unref,
+  useAttrs,
+  useCssModule,
+  useCssVars,
+  useListeners,
+  useSlots,
+  version,
+  watch,
+  watchEffect,
+  watchPostEffect,
+  watchSyncEffect
 }, Symbol.toStringTag, { value: 'Module' }));
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -56643,9 +56631,16 @@ function write (buffer, value, offset, isLE, mLen, nBytes) {
 
 var toString = {}.toString;
 
-const isArray = Array.isArray || function (arr) {
+var isArray = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
 
 var INSPECT_MAX_BYTES = 50;
 
@@ -56773,8 +56768,6 @@ Buffer.from = function (value, encodingOrOffset, length) {
 if (Buffer.TYPED_ARRAY_SUPPORT) {
   Buffer.prototype.__proto__ = Uint8Array.prototype;
   Buffer.__proto__ = Uint8Array;
-  if (typeof Symbol !== 'undefined' && Symbol.species &&
-      Buffer[Symbol.species] === Buffer) ;
 }
 
 function assertSize (size) {
@@ -61453,4 +61446,4 @@ xxh32$1.hash = xxh32;
 	};
 } (lz4));
 
-export { Buffer as B, Vue as V, lzma as a, iview$1 as b, Viewer as c, isBuffer as i, lz4 as l };
+export { Buffer as B, Vue as V, lzma as a, Viewer as b, iview$1 as i, lz4 as l };
