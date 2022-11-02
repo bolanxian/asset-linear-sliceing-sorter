@@ -72,13 +72,13 @@ const vm = new Vue({
     return {
       progress: null,
       curMeshName: null,
-      meshMap: null
+      meshMap: new Map()
     }
   },
   computed: {
     curMesh() {
       const name = this.curMeshName
-      return this.meshMap && this.meshMap.get(name)
+      return this.meshMap.get(name)
     }
   },
   methods: {
@@ -87,25 +87,15 @@ const vm = new Vue({
     },
     handleDrop: createProcesser('drop', async function (e) {
       e.preventDefault(); e.stopPropagation()
-      const vm = this, files = Array.from(e.dataTransfer.files)
-      if (this.hasFSAccess) {
-        for (const item of e.dataTransfer.items) {
-          if (item.kind !== 'file') { continue }
-          const entry = await item.getAsFileSystemHandle()
-          if (entry.kind !== 'directory') { continue }
-          vm.handle = entry
-          var it = await Mesh.FsHandleLoader.from(vm.handle)
-          break
-        }
-      }
-      if (it == null) { it = Mesh.FileLoader.fromList(files) }
+      const vm = this
+      const it = await Mesh.FileLoader.fromDataTransfer(e.dataTransfer)
       const map = vm.meshMap = new Map()
       for await (var [key, mesh] of it.entries((stat) => {
         LoadingBar.update(100 * stat.i / stat.size)
       })) {
         map.set(key, mesh)
         var weak = mesh.pantingExtracterWeak
-        if (weak) {
+        if (weak != null) {
           vm.lastPantingExtracter = weak.deref()
         }
         if (map.size === 1) { vm.draw(key) }
@@ -113,16 +103,17 @@ const vm = new Vue({
       }
     }),
     handleOpen: createProcesser('open', async function (e) {
-      const vm = this, el = e && e.target
-      if (el && e.type === 'change' && el.tagName === "INPUT") {
-        it = Mesh.FileLoader.fromList(el.files)
+      const vm = this, el = e?.target
+      let it
+      if (el != null && e.type === 'change' && el.tagName === "INPUT") {
+        it = Mesh.FileLoader.fromFileList(el.files)
       } else if (!vm.hasFSAccess) {
         const el = document.createElement('input')
         el.type = 'file'; el.multiple = true
         el.onchange = vm.handleOpen
-        document.body.appendChild(el)
-        el.click()
-        document.body.removeChild(el)
+        document.body.append(el)
+        el.click(); el.remove()
+        return
       } else {
         const fileHandles = await showOpenFilePicker({
           id, multiple: true,
@@ -130,31 +121,29 @@ const vm = new Vue({
             description: 'Images & Meshs',
             accept:{
               'image/png':'.png','text/plain+mesh':'.obj',
-              'text/*':'.Unity3D'
+              'app/unity-3d':'.Unity3D'
             }
           }] */
         })
-        it = Mesh.FileLoader.fromList(fileHandles)
+        it = await Mesh.FileLoader.fromFsFileHandleList(fileHandles)
       }
-      if (it) {
-        var map = vm.meshMap = new Map(), it
-        for await (var [key, mesh] of it.entries((stat) => {
-          LoadingBar.update(100 * stat.i / stat.size)
-        })) {
-          map.set(key, mesh)
-          var weak = mesh.pantingExtracterWeak
-          if (weak) {
-            vm.lastPantingExtracter = weak.deref()
-          }
-          if (map.size === 1) { vm.draw(key) }
-          vm.$forceUpdate()
+      const map = vm.meshMap = new Map()
+      for await (const [key, mesh] of it.entries((stat) => {
+        LoadingBar.update(100 * stat.i / stat.size)
+      })) {
+        map.set(key, mesh)
+        const weak = mesh.pantingExtracterWeak
+        if (weak != null) {
+          vm.lastPantingExtracter = weak.deref()
         }
+        if (map.size === 1) { vm.draw(key) }
+        vm.$forceUpdate()
       }
     }),
     handleOpenDir: createProcesser('open-dir', async function () {
       const vm = this
-      vm.handle = await window.showDirectoryPicker({ id })
-      const it = await Mesh.FsHandleLoader.from(vm.handle)
+      const handle = vm.handle = await window.showDirectoryPicker({ id })
+      const it = await Mesh.FileLoader.fromFsHandleList(handle.values())
       const map = vm.meshMap = new Map()
       for await (var [key, value] of it.entries((stat) => {
         LoadingBar.update(100 * stat.i / stat.size)
@@ -191,10 +180,11 @@ const vm = new Vue({
     }),
     handleExportsDir: createProcesser('exports-dir', async function () {
       const vm = this, { canvas } = vm.$refs
-      if (vm.handle) {
+      let handle
+      if (vm.handle != null) {
         handle = await vm.handle.getDirectoryHandle('exports', { create: true })
       } else {
-        var handle = await window.showDirectoryPicker({ id })
+        handle = await window.showDirectoryPicker({ id })
       }
       var prev = Promise.resolve()
       var i = 0, len = vm.meshMap.size + 1
@@ -259,7 +249,7 @@ const vm = new Vue({
   },
   render() {
     const vm = this, { _c, _v, _e, hasFSAccess, progress, meshMap } = this
-    const disabled = !!progress, hasMeshMap = meshMap && meshMap.size
+    const disabled = !!progress, hasMeshMap = !!meshMap.size
     return _c('div', {
       staticClass: "container", attrs: { id: "app" }
     }, [
@@ -272,7 +262,7 @@ const vm = new Vue({
               on: { click: vm.handleOpen }
             }, [_v('打开')]),
             _c(Button, {
-              attrs: { disabled: !hasFSAccess || disabled },
+              attrs: { disabled: disabled || !hasFSAccess },
               on: { click: vm.handleOpenDir }
             }, [_v('打开文件夹')]),
             _c(Button, {
@@ -280,7 +270,7 @@ const vm = new Vue({
               on: { click: vm.handleExports }
             }, [_v('导出')]),
             _c(Button, {
-              attrs: { disabled: !hasFSAccess || disabled || !hasMeshMap },
+              attrs: { disabled: disabled || !hasFSAccess || !hasMeshMap },
               on: { click: vm.handleExportsDir },
             }, [_v('批量导出')])
           ]),
@@ -288,26 +278,22 @@ const vm = new Vue({
         ])
       ]),
       _c(Row, { attrs: { gutter: 5 } }, [
-        _c(Col, {
-          attrs: { span: 4 },
-        }, [
+        _c(Col, { attrs: { span: 4 } }, [
           _c(CellGroup, {
             staticStyle: {
               'min-height': '100%',
               border: '5px solid #adadad',
               'border-bottom': 0
             },
-            on: { 'on-click': vm.draw },
-          }, vm.meshMap ? Array.from(vm.meshMap.keys(), (name) => {
-            return _c(Cell, {
-              attrs: {
-                name, title: name, disabled,
-                selected: vm.curMeshName === name
-              }
-            })
-          }) : [])
+            on: { 'on-click': vm.draw }
+          }, Array.from(vm.meshMap.keys(), (name) => _c(Cell, {
+            attrs: {
+              name, title: name,
+              selected: vm.curMeshName === name
+            }
+          })))
         ]),
-        _c(Col, { attrs: { span: 20 }, }, [
+        _c(Col, { attrs: { span: 20 } }, [
           _c('canvas', {
             ref: 'canvas',
             staticClass: 'transparent',
