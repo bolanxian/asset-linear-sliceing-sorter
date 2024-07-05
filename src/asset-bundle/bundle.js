@@ -9,7 +9,7 @@ const lzma_uncompress_stream=(data,uncompressedSize)=>{
     data.slice(0,5),Buffer.from(lzma_view.buffer),data.slice(5)
   ]))
 }
-import lz4 from 'mini-lz4/src/lz4'
+import lz4 from 'lz4js'
 const lz4_magic=Buffer.from('04224d1840700000000000','hex')
 const lz4_uncompress_stream=(data,uncompressedSize)=>{
   lz4_magic.writeUInt32LE(data.length,7)

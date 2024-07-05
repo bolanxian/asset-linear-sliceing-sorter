@@ -1,4 +1,7 @@
 
+import Asset from './asset-bundle/asset'
+import utils from './asset-bundle/utils'
+
 const tag = obj => obj[Symbol.toStringTag]
 const asyncIterToArray = async (it) => {
   const arr = []
@@ -14,10 +17,18 @@ const asyncEntriesToMap = async (it) => {
   }
   return map
 }
+
 const { abs, max, min } = Math
 const { apply } = Function.prototype, noop = () => { }
 const drawImg = apply.bind(CanvasRenderingContext2D.prototype.drawImage)
 class Mesh {
+  static parseMesh0(mesh) {
+    if (!mesh.startsWith('%YAML')) { return mesh }
+    const m = mesh.match(/^\s*_typelessdata\:\s*(.*?)$/m)
+    const inst = Object.create(Asset.Mesh.prototype)
+    inst.data = new Float32Array(utils.Buffer.from(m[1], 'hex').buffer)
+    return inst.toObj()
+  }
   static parseMesh1(mesh) {
     const v = [], vt = []
     var width = 0, height = 0, x, y
@@ -58,7 +69,7 @@ class Mesh {
     ]))
   }
   static from(mesh, img) {
-    var opts = this.parseMesh1(mesh)
+    var opts = this.parseMesh1(this.parseMesh0(mesh))
     var slices = Array.from(this.parseMesh2(opts, img))
     var that = new this(opts.width, opts.height, slices)
     return that
@@ -121,6 +132,7 @@ class Mesh {
   }
 }
 const PNG_EXT = '.png', MESH_EXT = '-mesh.obj', BUNDLE_EXT = '_tex'
+const MESH_INFO_EXT = '-mesh.asset'
 class MeshFileLoader {
   static fromDataTransfer(dT) {
     if (typeof DataTransferItem.prototype.getAsFileSystemHandle === 'function') {
@@ -199,11 +211,19 @@ class MeshFileLoader {
         bundles.set(name, file)
       } else if (name.endsWith(MESH_EXT)) {
         files.set(name, file)
+      } else if (name.endsWith(MESH_INFO_EXT)) {
+        files.set(name, file)
       }
     }
     for (const name of Array.from(pngs.keys())) {
-      const mesh = files.get(`${name}${MESH_EXT}`)
-      mesh != null ? meshs.set(name, mesh) : pngs.delete(name)
+      let mesh
+      if ((mesh = files.get(`${name}${MESH_EXT}`)) != null) {
+        meshs.set(name, mesh)
+      } else if ((mesh = files.get(`${name}${MESH_INFO_EXT}`)) != null) {
+        meshs.set(name, mesh)
+      } else {
+        pngs.delete(name)
+      }
     }
     return that
   }
